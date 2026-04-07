@@ -1,9 +1,8 @@
 """Configuration et gestion du logging."""
 
 import os
-import sys
 from datetime import datetime
-from logging import getLogger, basicConfig, INFO, DEBUG, WARNING, ERROR
+from logging import DEBUG, ERROR, INFO, WARNING, basicConfig, getLogger
 
 
 def setup_logger(log_level="INFO") -> getLogger:
@@ -16,19 +15,11 @@ def setup_logger(log_level="INFO") -> getLogger:
     Retourne:
         Logger: Instance de logger configurée
     """
-    log_levels = {
-        "DEBUG": DEBUG,
-        "INFO": INFO,
-        "WARNING": WARNING,
-        "ERROR": ERROR
-    }
+    log_levels = {"DEBUG": DEBUG, "INFO": INFO, "WARNING": WARNING, "ERROR": ERROR}
 
     level = log_levels.get(log_level.upper(), INFO)
 
-    basicConfig(
-        format="%(message)s",
-        level=level
-    )
+    basicConfig(format="%(message)s", level=level)
 
     logger = getLogger(__name__)
 

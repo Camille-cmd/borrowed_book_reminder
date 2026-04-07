@@ -14,14 +14,5 @@ ensure_log_directory()
 api = MediathequeAPI()
 loans = api.get_loans()
 
-# Filtrer les livres dans le futur
-today = datetime.now().strftime("%Y-%m-%d")
-future_loans = [
-    loan for loan in loans if loan.get("due_date") and loan["due_date"] >= today
-]
-
 # Synchroniser les événements
-if future_loans:
-    events_created = create_events(future_loans, settings.TIMEZONE)
-else:
-    logger.info("[SYNC] Aucun livre à synchroniser (tous rendus)")
+create_events(loans, settings.TIMEZONE)

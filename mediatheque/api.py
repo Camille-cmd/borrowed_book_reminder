@@ -7,6 +7,7 @@ from requests.exceptions import RequestException
 from config.settings import settings
 from mediatheque.auth import MediathequeAuth
 from utils.logger import logger
+from utils.utils import get_tzinfo
 
 
 class MediathequeAPI:
@@ -98,7 +99,6 @@ class MediathequeAPI:
             return []
 
         for loan in loans_data:
-            print(loans_data)
             if not isinstance(loan, dict):
                 continue
 
@@ -173,7 +173,7 @@ class MediathequeAPI:
                     timestamp_sec = (
                         int(timestamp_str) / 1000
                     )  # Millisecondes -> secondes
-                    dt = datetime.fromtimestamp(timestamp_sec)
+                    dt = datetime.fromtimestamp(timestamp_sec, tz=get_tzinfo())
                     return dt.strftime("%Y-%m-%d")
                 except Exception as e:
                     logger.warning(f"[API] Erreur parsing date: {e}, using fallback")
