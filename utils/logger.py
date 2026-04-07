@@ -17,7 +17,7 @@ def setup_logger(log_level: str = "INFO") -> getLogger:
     basicConfig(
         format="%(asctime)s - %(levelname)s - %(message)s",
         level=log_level.upper(),
-        filename="/logs/app.log",
+        filename="logs/app.log",
         filemode="a",
     )
 
