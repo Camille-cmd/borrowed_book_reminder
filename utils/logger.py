@@ -1,11 +1,10 @@
 """Configuration et gestion du logging."""
 
 import os
-from datetime import datetime
-from logging import DEBUG, ERROR, INFO, WARNING, basicConfig, getLogger
+from logging import basicConfig, getLogger
 
 
-def setup_logger(log_level="INFO") -> getLogger:
+def setup_logger(log_level: str = "INFO") -> getLogger:
     """
     Configure le logging pour le projet.
 
@@ -15,11 +14,12 @@ def setup_logger(log_level="INFO") -> getLogger:
     Retourne:
         Logger: Instance de logger configurée
     """
-    log_levels = {"DEBUG": DEBUG, "INFO": INFO, "WARNING": WARNING, "ERROR": ERROR}
-
-    level = log_levels.get(log_level.upper(), INFO)
-
-    basicConfig(format="%(message)s", level=level)
+    basicConfig(
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        level=log_level.upper(),
+        filename="logs/app.log",
+        filemode="a",
+    )
 
     logger = getLogger(__name__)
 
@@ -27,17 +27,6 @@ def setup_logger(log_level="INFO") -> getLogger:
 
 
 logger = setup_logger()
-
-
-def get_log_file_name():
-    """
-    Génère le nom du fichier de log actuel.
-
-    Retourne:
-        str: Nom du fichier de log (logs/sync_{DATE}.log)
-    """
-    today = datetime.now().strftime("%Y-%m-%d")
-    return f"logs/sync_{today}.log"
 
 
 def ensure_log_directory():

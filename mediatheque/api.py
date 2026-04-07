@@ -66,7 +66,7 @@ class MediathequeAPI:
             loans = self._extract_loans(data)
             logger.info(f"[API] {len(loans)} livres récupérés via API")
             for loan in loans:
-                logger.info(f"{loan['title']} due on {loan['due_date']}")
+                logger.info(f"[API] {loan['title']} due on {loan['due_date']}")
 
             return loans
 
