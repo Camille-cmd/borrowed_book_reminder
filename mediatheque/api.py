@@ -103,19 +103,15 @@ class MediathequeAPI:
                 continue
 
             loan_info = {
-                "title": self._get_field(loan, ["Title", "title", "Titre"]),
+                "title": loan.get("Title"),
                 "due_date": self._parse_due_date(loan),
-                "loan_number": self._get_field(
-                    loan, ["LoanNumber", "loanNumber", "NuméroPrêt", "Id"]
-                ),
-                "author": self._get_field(loan, ["Author", "author", "Auteur"]),
-                "publisher": self._get_field(
-                    loan, ["Publisher", "publisher", "Éditeur"]
-                ),
-                "url": self._get_field(loan, ["TitleLink", "titleLink", "Url"]),
-                "isbn": self._get_field(loan, ["ISBN", "isbn", "ISBN"]),
-                "location": self._get_field(loan, ["Location"]),
-                "can_renew": self._get_field(loan, ["CanRenew"]),
+                "loan_number": loan.get("Id"),
+                "author": loan.get("Author"),
+                "publisher": loan.get("Publisher"),
+                "url": loan.get("TitleLink"),
+                "isbn": loan.get("ISBN"),
+                "location": loan.get("Location"),
+                "can_renew": loan.get("CanRenew"),
             }
 
             if loan_info["title"]:
@@ -123,78 +119,33 @@ class MediathequeAPI:
 
         return loans
 
-    def _get_field(self, data, fields):
-        """Récupère un champ avec plusieurs noms possibles."""
-        for field in fields:
-            if field in data and data[field]:
-                return data[field]
-        return None
-
-    def _parse_due_date(self, loan) -> str:
+    def _parse_due_date(self, loan) -> str | None:
         """
         Parse la date de rendu du livre.
 
         Retourne:
             str: Date formatée comme 'YYYY-MM-DD'
         """
-        due_date = self._get_field(
-            loan,
-            [
-                "DueDate",
-                "dueDate",
-                "DateRendu",
-                "DateRenduPrévue",
-                "DateDeRendu",
-                "dateDeRendu",
-                "DueDateTime",
-                "dueDateTime",
-                "WhenBack",
-                "whenback",
-            ],
-        )
+        due_date = loan.get("WhenBack")
 
         if not due_date:
             return None
 
         # Format spécial: /Date(1775685600000+0200)/
-        if (
-            isinstance(due_date, str)
-            and due_date.startswith("/Date(")
-            and due_date.endswith("/")
-        ):
-            due_date = due_date[6:-2]  # Enlever /Date() et /
-            # Enlever les parenthèses
-            if due_date.startswith("(") and due_date.endswith(")"):
-                due_date = due_date[1:-1]
-            # Extraire timestamp et timezone
-            if "+" in due_date:
-                timestamp_str, tz_offset = due_date.split("+", 1)
-                try:
-                    timestamp_sec = (
-                        int(timestamp_str) / 1000
-                    )  # Millisecondes -> secondes
-                    dt = datetime.fromtimestamp(timestamp_sec, tz=get_tzinfo())
-                    return dt.strftime("%Y-%m-%d")
-                except Exception as e:
-                    logger.warning(f"[API] Erreur parsing date: {e}, using fallback")
-                    return None
-
-        # Essayer différents formats de date
-        formats = [
-            "%d/%m/%Y",  # 15/01/2024
-            "%Y-%m-%d",  # 2024-01-15
-            "%d-%m-%Y",  # 15-01-2024
-            "%Y/%m/%d",  # 2024/01/15
-            "%d.%m.%Y",  # 15.01.2024
-            "%m/%d/%Y",  # 01/15/2024
-        ]
-
-        for fmt in formats:
+        due_date = due_date[6:-2]  # Enlever /Date() et /
+        # Enlever les parenthèses
+        if due_date.startswith("(") and due_date.endswith(")"):
+            due_date = due_date[1:-1]
+        # Extraire timestamp et timezone
+        if "+" in due_date:
+            timestamp_str, tz_offset = due_date.split("+", 1)
             try:
-                parsed_date = datetime.strptime(str(due_date), fmt)
-                return parsed_date.strftime("%Y-%m-%d")
-            except ValueError:
-                continue
+                timestamp_sec = int(timestamp_str) / 1000  # Millisecondes -> secondes
+                dt = datetime.fromtimestamp(timestamp_sec, tz=get_tzinfo())
+                return dt.strftime("%Y-%m-%d")
+            except Exception as e:
+                logger.warning(f"[API] Erreur parsing date: {e}, using fallback")
+                return None
 
         logger.warning(f"[API] Date de rendu non parseable: {due_date}")
         return None
